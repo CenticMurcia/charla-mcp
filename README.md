@@ -20,6 +20,7 @@ Este repositorio contiene material de apoyo para la charla "MCP: Un protocolo pa
 - **Ejemplos de Implementación**
   - `typescript-mcp-sample/` - Implementación de ejemplo en TypeScript
   - `rust-mcp-sample/` - Implementación de ejemplo en Rust
+  - `r2-mcp/` - Servidor MCP completo para demo en vivo (IoT + Quiz + Email)
 
 ## Ejemplos de Código
 
@@ -51,6 +52,69 @@ Para ejecutar el ejemplo de Rust:
 ```bash
 cd rust-mcp-sample
 cargo run
+```
+
+### R2-MCP — Servidor MCP para Demo en Vivo
+
+El directorio `r2-mcp/` contiene un servidor MCP completo pensado para usar como demo interactiva durante la charla. Permite que un LLM (como Claude) actúe como presentador en vivo, controlando dispositivos IoT, gestionando un quiz con la audiencia y enviando emails a los asistentes.
+
+**Tecnologías:** TypeScript, MCP SDK, MQTT, PostgreSQL, Resend, Docker.
+
+**Herramientas expuestas (14):**
+
+| Categoría | Herramientas | Descripción |
+|---|---|---|
+| IoT / MQTT | `sew-switch`, `alarma`, `controlar-actuador`, `todos-actuadores` | Control de actuadores físicos (bombilla, interruptor, contactor, etc.) vía MQTT |
+| Quiz / Audiencia | `consultar-audiencia`, `crear-pregunta`, `resolver-pregunta`, `consultar-preguntas`, `consultar-respuestas`, `ranking-audiencia` | Gestión de preguntas, encuestas, respuestas y ranking en tiempo real |
+| Dudas | `listar-dudas`, `responder-duda` | Q&A con los asistentes |
+| Histórico | `historico-circuito` | Registro de eventos on/off de los actuadores |
+| Email | `enviar-email` | Envío de correos a asistentes vía Resend |
+
+**Variables de entorno necesarias** (ver `.env.example`):
+`RESEND_API_KEY`, `MQTT_URL`, `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`
+
+**Para ejecutar:**
+
+```bash
+cd r2-mcp
+npm install
+npm run dev          # Modo HTTP (puerto 3000)
+npm run dev:stdio    # Modo stdio (para Claude Desktop)
+```
+
+**Con Docker:**
+
+```bash
+cd r2-mcp
+docker build -t charlamcp-centic -f Dockerfile .
+docker run --rm -p 3000:3000 --env-file .env charlamcp-centic
+```
+
+**Configuración para Claude Desktop (stdio):**
+
+```json
+{
+  "mcpServers": {
+    "charla-mcp": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/ruta/a/dist/index-stdio.js"]
+    }
+  }
+}
+```
+
+**Configuración para VS Code (HTTP):**
+
+```json
+{
+  "servers": {
+    "charla-mcp": {
+      "type": "streamable-http",
+      "url": "http://localhost:3000/mcp"
+    }
+  }
+}
 ```
 
 ## Más Información
